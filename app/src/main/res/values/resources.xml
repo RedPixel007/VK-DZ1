@@ -1,0 +1,13 @@
+<resources>
+    <string name="app_name">Работа со списком</string>
+    <string name="add_item">Добавить квадрат</string>
+    <string name="item_number">%1$d</string>
+    <integer name="columns">3</integer>
+    <integer name="initial_count">0</integer>
+    <dimen name="spacing">8dp</dimen>
+    <dimen name="screen_padding">16dp</dimen>
+    <dimen name="number_size">28sp</dimen>
+    <color name="even_color">#D32F2F</color>
+    <color name="odd_color">#1565C0</color>
+    <color name="number_color">#FFFFFF</color>
+</resources>
