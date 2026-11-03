@@ -32,6 +32,9 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.integerResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.foundation.clickable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.foundation.lazy.grid.items
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,7 +47,19 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun NumberGridScreen() {
     val initialCount = integerResource(R.integer.initial_count)
-    var count by rememberSaveable { mutableIntStateOf(initialCount) }
+
+    var squares by rememberSaveable {
+        mutableStateOf((1..initialCount).toList())
+    }
+
+    var deletedSquares by rememberSaveable {
+        mutableStateOf(emptyList<Int>())
+    }
+
+    var nextNumber by rememberSaveable {
+        mutableIntStateOf(initialCount + 1)
+    }
+
     val spacing = dimensionResource(R.dimen.spacing)
     Surface(modifier = Modifier.fillMaxSize()) {
         Column(
@@ -59,29 +74,76 @@ private fun NumberGridScreen() {
                 horizontalArrangement = Arrangement.spacedBy(spacing),
                 verticalArrangement = Arrangement.spacedBy(spacing)
             ) {
-                items(count = count, key = { it }) { index -> NumberSquare(index + 1) }
+                items(
+                    items = squares,
+                    key = { number -> number }
+                ) { number ->
+                    NumberSquare(
+                        number = number,
+                        onClick = {
+                            squares = squares - number
+                            deletedSquares = deletedSquares + number
+                        }
+                    )
+                }
             }
+
             Button(
-                onClick = { count++ },
-                modifier = Modifier.fillMaxWidth().padding(bottom = spacing)
-            ) { Text(stringResource(R.string.add_item)) }
+                onClick = {
+                    if (deletedSquares.isNotEmpty()) {
+                        val restoredNumber = deletedSquares.last()
+
+                        squares = squares + restoredNumber
+                        deletedSquares = deletedSquares.dropLast(1)
+                    } else {
+                        squares = squares + nextNumber
+                        nextNumber++
+                    }
+                },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = spacing)
+            ) {
+                Text(
+                    text = stringResource(R.string.add_item)
+                )
+            }
         }
     }
 }
 
 @Composable
-private fun NumberSquare(number: Int) {
+private fun NumberSquare(
+    number: Int,
+    onClick: () -> Unit
+) {
     val fontSize = with(LocalDensity.current) {
         dimensionResource(R.dimen.number_size).toSp()
     }
+
     Box(
-        modifier = Modifier.fillMaxWidth().aspectRatio(1f).background(
-            colorResource(if (number % 2 == 0) R.color.even_color else R.color.odd_color)
-        ),
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(1f)
+            .background(
+                colorResource(
+                    if (number % 2 == 0) {
+                        R.color.even_color
+                    } else {
+                        R.color.odd_color
+                    }
+                )
+            )
+            .clickable(
+                onClick = onClick
+            ),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = stringResource(R.string.item_number, number),
+            text = stringResource(
+                R.string.item_number,
+                number
+            ),
             color = colorResource(R.color.number_color),
             fontSize = fontSize
         )
